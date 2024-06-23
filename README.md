@@ -12,8 +12,11 @@ LCD_Library
 ├───LICENSE.txt
 └───README.md
 ```
-# How to porting the library:
-To port the library the user needs to populate the lcd_user_defines.h file with their own hardware definitions.
+# How to start with the library:
+Decide whether to use 4 data lines or 8 data lines to interface your mcu with LCD after deciding, use the CMakeLists.txt file of the core project add either LCD_8_BIT_MODE or LCD_4_BIT_MODE in the definitions, depending on the amount of data lines. Then start the process of porting the microcontroller gpio definitions to use with the library.
+
+# How to port the library:
+To port the library populate the lcd_user_defines.h file with the selected microcontroller hardware definitions.
 
 # STM32L4xx Porting example:
 
@@ -131,4 +134,54 @@ Modify the hardware definitions (ex. 4 bit mode).
       LCD_RW_PORT->BRR = (0x1UL << LCD_RW_PIN); \
       LCD_E_PORT->BRR = (0x1UL << LCD_E_PIN); \
     }while(0)
+```
+# How to use the library:
+Include the lcd.h header file to your project and call the lcd_init function to startup the LCD. 
+In the following example the screen is initialized for 2 lines, 5x8 dot character font and uses the HAL_Delay function for the internal timeouts.
+If the lcd_init function doesn't return an LCD_OK result the execution stops at the breakpoint.
+
+```
+#include "lcd.h"
+int main(void)
+{
+	if (lcd_init(2, 8, HAL_Delay) != LCD_OK)
+	{
+	   __BKPT(0);
+	}
+
+	while(1)
+	{
+	}
+}
+
+```
+
+In the following example after the lcd initialization the display is turned on, the cursor is not turned on, the cursor is moved to line 2, position 5, 
+and the string "Hello World" is written in the display. If any of the functions don't return an LCD_OK result the execution stops at the breakpoint.
+
+```
+#include "lcd.h"
+int main(void)
+{
+	if (lcd_init(2, 8, HAL_Delay) != LCD_OK)
+	{
+	   __BKPT(0);
+	}
+	if (lcd_display(true, false, false) != LCD_OK)
+	{
+	   __BKPT(0);
+	}
+	if (lcd_set_cursor_position(2, 5) != LCD_OK)
+	{
+	   __BKPT(0);
+	}
+	if (lcd_print_string("Hello World") != LCD_OK)
+	{
+	   __BKPT(0);
+	}
+	while(1)
+	{
+	}
+}
+
 ```
