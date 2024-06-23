@@ -413,6 +413,7 @@ lcd_return_type lcd_print_string(char* ch)
     while (*ch != '\0')
     {
         LCD_TIMEOUT_ASSERT(lcd_print_char(*ch));
+        ch++;
     }
     return LCD_OK;
 }
