@@ -24,10 +24,28 @@
 #define LCD_SET_CGRAM_ADDRESS (0x1U << 6) /*<! Set cgram address instruction.*/
 #define LCD_SET_DDRAM_ADDRESS (0x1U << 7) /*<! Set ddram address instruction.*/
 
+#define LCD_ERROR_ASSERT(pr) do \
+{ \
+    if (!(pr)) \
+    { \
+        return LCD_ERROR; \
+    } \
+}while(0)
+
+#define LCD_TIMEOUT_ASSERT(pr) do \
+{ \
+    if ((pr) != LCD_OK) \
+    { \
+        return LCD_TIMEOUT; \
+    } \
+}while(0)
+
+
 /*Store the delay callback.*/
 static void (*lcd_ms_delay)(uint32_t max);
 /*Store the number of lines.*/
 static uint8_t lcd_lines; /*<! 0 for 1 line, 1 for 2 lines.*/
+/*Store the number of dots.*/
 static uint8_t lcd_dots; /*<! 0 for 5x8 dots, 1 for 5x10 dots.*/
 
 static inline void lcd_write(uint8_t data, uint8_t rs_bit, uint8_t rw_bit);
@@ -178,29 +196,17 @@ static lcd_return_type busy_bit_read_timeout(uint32_t max)
 lcd_return_type lcd_init(uint8_t number_of_lines, uint8_t number_of_dots, void (*ms_delay)(uint32_t max))
 {
     /*Number of lines can be 1 or 2.*/
-    if (number_of_lines != 1 && number_of_lines != 2)
-    {
-        return LCD_ERROR;
-    }
+    LCD_ERROR_ASSERT(number_of_lines == 1 || number_of_lines == 2);
     /*Store the number of lines.*/
     lcd_lines = (number_of_lines >> 1);
     /*Number of dots can be 8 or 10.*/
-    if (number_of_dots != 8 && number_of_dots != 10)
-    {
-        return LCD_ERROR;
-    }
+    LCD_ERROR_ASSERT(number_of_dots == 8 || number_of_dots == 10);
     lcd_dots = ((number_of_dots >> 1) & 0x1U);
     /*Cannot display two lines for 5 × 10 dot character fond.*/
-    if (number_of_lines == 2 && number_of_dots == 10)
-    {
-        return LCD_ERROR;
-    }
-
+    LCD_ERROR_ASSERT(!(number_of_lines == 2 && number_of_dots == 10));
     /*Delay callback cannot be empty.*/
-    if (ms_delay == NULL)
-    {
-        return LCD_ERROR;
-    }
+    LCD_ERROR_ASSERT(ms_delay != NULL);
+
     lcd_ms_delay = ms_delay;
 
     /* Hardware init.*/
@@ -217,28 +223,16 @@ lcd_return_type lcd_init(uint8_t number_of_lines, uint8_t number_of_dots, void (
     lcd_ms_delay(1);
     lcd_write_instruction((LCD_FUNCTION_SET | LCD_DL_8_BIT));
     lcd_write_instruction((LCD_FUNCTION_SET | LCD_DL_8_BIT | (lcd_lines << 3) | (lcd_dots << 2)));
-    if (busy_bit_read_timeout(LCD_TIMEOUT_MAX) == LCD_TIMEOUT)
-    {
-        return LCD_TIMEOUT;
-    }
+    LCD_TIMEOUT_ASSERT(busy_bit_read_timeout(LCD_TIMEOUT_MAX));
     /*Display off.*/
     lcd_write_instruction(LCD_DISPLAY_ONOFF_CTRL);
-    if (busy_bit_read_timeout(LCD_TIMEOUT_MAX) == LCD_TIMEOUT)
-    {
-        return LCD_TIMEOUT;
-    }
+    LCD_TIMEOUT_ASSERT(busy_bit_read_timeout(LCD_TIMEOUT_MAX));
     /*Clear display.*/
     lcd_write_instruction(LCD_CLEAR_DISPLAY);
-    if (busy_bit_read_timeout(LCD_TIMEOUT_MAX) == LCD_TIMEOUT)
-    {
-        return LCD_TIMEOUT;
-    }
+    LCD_TIMEOUT_ASSERT(busy_bit_read_timeout(LCD_TIMEOUT_MAX));
     /*Entry mode set.*/
     lcd_write_instruction(LCD_ENTRY_MODE_SET);
-    if (busy_bit_read_timeout(LCD_TIMEOUT_MAX) == LCD_TIMEOUT)
-    {
-        return LCD_TIMEOUT;
-    }
+    LCD_TIMEOUT_ASSERT(busy_bit_read_timeout(LCD_TIMEOUT_MAX));
 
 #elif defined(LCD_4_BIT_MODE)
     lcd_write_4_bit_init_instruction((LCD_FUNCTION_SET | LCD_DL_8_BIT));
@@ -252,31 +246,19 @@ lcd_return_type lcd_init(uint8_t number_of_lines, uint8_t number_of_dots, void (
     /*Function set 4 bit and user setting for number of lines and dots.*/
     lcd_write_4_bit_init_instruction(LCD_FUNCTION_SET);
     lcd_write_instruction(LCD_FUNCTION_SET | (lcd_lines << 3) | ((number_of_dots >> 1) & 0x1U));
-    if (busy_bit_read_timeout(LCD_TIMEOUT_MAX) == LCD_TIMEOUT)
-    {
-        return LCD_TIMEOUT;
-    }
+    LCD_TIMEOUT_ASSERT(busy_bit_read_timeout(LCD_TIMEOUT_MAX));
     /*Display off.*/
     lcd_write_instruction(0);
     lcd_write_instruction(LCD_DISPLAY_ONOFF_CTRL);
-    if (busy_bit_read_timeout(LCD_TIMEOUT_MAX) == LCD_TIMEOUT)
-    {
-        return LCD_TIMEOUT;
-    }
+    LCD_TIMEOUT_ASSERT(busy_bit_read_timeout(LCD_TIMEOUT_MAX));
     /*Clear display.*/
     lcd_write_instruction(0);
     lcd_write_instruction(LCD_CLEAR_DISPLAY);
-    if (busy_bit_read_timeout(LCD_TIMEOUT_MAX) == LCD_TIMEOUT)
-    {
-        return LCD_TIMEOUT;
-    }
+    LCD_TIMEOUT_ASSERT(busy_bit_read_timeout(LCD_TIMEOUT_MAX));
     /*Entry mode set.*/
     lcd_write_instruction(0);
     lcd_write_instruction(LCD_ENTRY_MODE_SET);
-    if (busy_bit_read_timeout(LCD_TIMEOUT_MAX) == LCD_TIMEOUT)
-    {
-        return LCD_TIMEOUT;
-    }
+    LCD_TIMEOUT_ASSERT(busy_bit_read_timeout(LCD_TIMEOUT_MAX));
 #endif
     return LCD_OK;
 }
@@ -284,40 +266,28 @@ lcd_return_type lcd_init(uint8_t number_of_lines, uint8_t number_of_dots, void (
 lcd_return_type lcd_clear_display(void)
 {
     lcd_write_instruction(LCD_CLEAR_DISPLAY);
-    if (busy_bit_read_timeout(LCD_TIMEOUT_MAX) == LCD_TIMEOUT)
-    {
-        return LCD_TIMEOUT;
-    }
+    LCD_TIMEOUT_ASSERT(busy_bit_read_timeout(LCD_TIMEOUT_MAX));
     return LCD_OK;
 }
 
 lcd_return_type lcd_return_home(void)
 {
     lcd_write_instruction(LCD_RETURN_HOME);
-    if (busy_bit_read_timeout(LCD_TIMEOUT_MAX) == LCD_TIMEOUT)
-    {
-        return LCD_TIMEOUT;
-    }
+    LCD_TIMEOUT_ASSERT(busy_bit_read_timeout(LCD_TIMEOUT_MAX));
     return LCD_OK;
 }
 
 lcd_return_type lcd_increment_cursor(bool shift_display)
 {
     lcd_write_instruction(LCD_ENTRY_MODE_SET | LCD_ID_INCREMENT | shift_display);
-    if (busy_bit_read_timeout(LCD_TIMEOUT_MAX) == LCD_TIMEOUT)
-    {
-        return LCD_TIMEOUT;
-    }
+    LCD_TIMEOUT_ASSERT(busy_bit_read_timeout(LCD_TIMEOUT_MAX));
     return LCD_OK;
 }
 
 lcd_return_type lcd_decrement_cursor(bool shift_display)
 {
     lcd_write_instruction(LCD_ENTRY_MODE_SET | shift_display);
-    if (busy_bit_read_timeout(LCD_TIMEOUT_MAX) == LCD_TIMEOUT)
-    {
-        return LCD_TIMEOUT;
-    }
+    LCD_TIMEOUT_ASSERT(busy_bit_read_timeout(LCD_TIMEOUT_MAX));
     return LCD_OK;
 }
 
@@ -339,85 +309,58 @@ lcd_return_type lcd_display(bool display_on, bool cursor_on, bool blink_on)
     }
 
     lcd_write_instruction(instr);
-    if (busy_bit_read_timeout(LCD_TIMEOUT_MAX) == LCD_TIMEOUT)
-    {
-        return LCD_TIMEOUT;
-    }
+    LCD_TIMEOUT_ASSERT(busy_bit_read_timeout(LCD_TIMEOUT_MAX));
     return LCD_OK;
 }
 
 lcd_return_type lcd_shift_display_right(void)
 {
     lcd_write_instruction(LCD_CURSOR_OR_DISPLAY_SHIFT | LCD_SC_DISPLAY_SHIFT | LCD_RL_SHIFT_RIGHT);
-    if (busy_bit_read_timeout(LCD_TIMEOUT_MAX) == LCD_TIMEOUT)
-    {
-        return LCD_TIMEOUT;
-    }
+    LCD_TIMEOUT_ASSERT(busy_bit_read_timeout(LCD_TIMEOUT_MAX));
     return LCD_OK;
 }
 
 lcd_return_type lcd_shift_display_left(void)
 {
     lcd_write_instruction(LCD_CURSOR_OR_DISPLAY_SHIFT | LCD_SC_DISPLAY_SHIFT);
-    if (busy_bit_read_timeout(LCD_TIMEOUT_MAX) == LCD_TIMEOUT)
-    {
-        return LCD_TIMEOUT;
-    }
+    LCD_TIMEOUT_ASSERT(busy_bit_read_timeout(LCD_TIMEOUT_MAX));
     return LCD_OK;
 }
 
 lcd_return_type lcd_shift_cursor_right(void)
 {
     lcd_write_instruction(LCD_CURSOR_OR_DISPLAY_SHIFT | LCD_RL_SHIFT_RIGHT);
-    if (busy_bit_read_timeout(LCD_TIMEOUT_MAX) == LCD_TIMEOUT)
-    {
-        return LCD_TIMEOUT;
-    }
+    LCD_TIMEOUT_ASSERT(busy_bit_read_timeout(LCD_TIMEOUT_MAX));
     return LCD_OK;
 }
 
 lcd_return_type lcd_shift_cursor_left(void)
 {
     lcd_write_instruction(LCD_CURSOR_OR_DISPLAY_SHIFT);
-    if (busy_bit_read_timeout(LCD_TIMEOUT_MAX) == LCD_TIMEOUT)
-    {
-        return LCD_TIMEOUT;
-    }
+    LCD_TIMEOUT_ASSERT(busy_bit_read_timeout(LCD_TIMEOUT_MAX));
     return LCD_OK;
 }
 
 lcd_return_type lcd_set_cursor_position(uint8_t line, uint8_t position)
 {
     uint8_t pos;
+    /*Line and position cannot be 0.*/
+    LCD_ERROR_ASSERT(line && position);
 
-    if (!line || !position)
-    {
-        return LCD_ERROR;
-    }
+    /*Cannot move the cursor to a line that doesn't exist (or else line has to be less or equal to the stored lines).*/
+    LCD_ERROR_ASSERT((line >> 1) <= lcd_lines);
 
-    /*Cannot move the cursor to a line that doesn't exist.*/
-    if ((line >> 1) > lcd_lines)
-    {
-        return LCD_ERROR;
-    }
-    /*1 line display can only have 80 positions.*/
-    if (!lcd_lines && position > 80)
-    {
-        return LCD_ERROR;
-    }
-    /*2 line display can only have 40 positions.*/
-    if (lcd_lines && position > 40)
-    {
-        return LCD_ERROR;
-    }
+    /*1 line display cannot have more than 80 positions.*/
+    LCD_ERROR_ASSERT(!(!lcd_lines && position > 80));
+
+    /*2 line display cannot have more than 40 positions.*/
+    LCD_ERROR_ASSERT(!(lcd_lines && position > 40));
+
     /*Calculate ddram depending on the lines and position.*/
     pos = (!lcd_lines) ? (uint8_t)(position - 1) : (!(line >> 1)) ? (uint8_t)(position - 1) : (uint8_t)((position - 1) + 0x40U);
 
     lcd_write_instruction(LCD_SET_DDRAM_ADDRESS | (pos & 0x7FU));
-    if (busy_bit_read_timeout(LCD_TIMEOUT_MAX) == LCD_TIMEOUT)
-    {
-        return LCD_TIMEOUT;
-    }
+    LCD_TIMEOUT_ASSERT(busy_bit_read_timeout(LCD_TIMEOUT_MAX));
     return LCD_OK;
 }
 
@@ -426,29 +369,50 @@ uint8_t lcd_get_cursor_position(void)
     return (lcd_read_bf_ac() & 0x7FU);
 }
 
+lcd_return_type lcd_create_custom_char(uint8_t number_of_dots, uint8_t position, uint8_t *data)
+{
+    uint8_t cgram_address;
+    /*Number of dots can be 8 or 10.*/
+    LCD_ERROR_ASSERT(number_of_dots == 8 && number_of_dots == 10);
+
+    /*For 8 dots the position address cannot be bigger than 0x7.*/
+    LCD_ERROR_ASSERT(!(number_of_dots == 8 && position > 0x7U));
+
+    /*For 10 dots the position address cannot be bigger than 0x4.*/
+    LCD_ERROR_ASSERT(!(number_of_dots == 10 && position > 0x4U));
+   
+    if (number_of_dots == 8)
+    {
+        cgram_address = ((position & 0x7U) << 3);
+    }
+
+    if (number_of_dots == 10)
+    {
+        cgram_address = ((position & 0x3U) << 4);
+    }
+
+    lcd_write_instruction(LCD_SET_CGRAM_ADDRESS | cgram_address);
+    LCD_TIMEOUT_ASSERT(busy_bit_read_timeout(LCD_TIMEOUT_MAX));
+
+    while (number_of_dots--)
+    {
+        lcd_write_data(*data);
+        data++;
+    } 
+}
+
 lcd_return_type lcd_print_char(char ch)
-{  
-    #if defined(LCD_8_BIT_MODE)
-        lcd_write_data((uint8_t)ch);
-    #elif defined(LCD_4_BIT_MODE)
-        lcd_write_data(((uint8_t)ch & (0xFU << 4)));
-        lcd_write_data(((uint8_t)ch & 0xFU) << 4);
-    #endif
-        if (busy_bit_read_timeout(LCD_TIMEOUT_MAX) == LCD_TIMEOUT)
-        {
-            return LCD_TIMEOUT;
-        }
-        return LCD_OK;
+{
+    lcd_write_data((uint8_t)ch);
+    LCD_TIMEOUT_ASSERT(busy_bit_read_timeout(LCD_TIMEOUT_MAX));
+    return LCD_OK;
 }
 
 lcd_return_type lcd_print_string(char* ch)
 {
     while (*ch != '\0')
     {
-        if (lcd_print_char(*ch) == LCD_TIMEOUT)
-        {
-            return LCD_TIMEOUT;
-        }
+        LCD_TIMEOUT_ASSERT(lcd_print_char(*ch));
     }
     return LCD_OK;
 }
