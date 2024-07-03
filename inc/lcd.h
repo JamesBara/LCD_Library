@@ -22,7 +22,7 @@ lcd_return_type lcd_shift_display_left(void);
 lcd_return_type lcd_shift_cursor_right(void);
 lcd_return_type lcd_shift_cursor_left(void);
 lcd_return_type lcd_set_cursor_position(uint8_t line, uint8_t position);
-uint8_t lcd_get_cursor_position(void);
+lcd_return_type lcd_get_cursor_position(uint8_t *line, uint8_t *position);
 lcd_return_type lcd_create_custom_char(uint8_t number_of_dots, uint8_t position, uint8_t* data);
 lcd_return_type lcd_print_char(char ch);
 lcd_return_type lcd_print_string(char *ch);

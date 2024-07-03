@@ -181,7 +181,7 @@ static uint8_t lcd_read_data(void)
 
 static lcd_return_type busy_bit_read_timeout(uint32_t max)
 {
-    uint32_t timeout;
+    uint32_t timeout = 0;
     while (lcd_read_bf_ac() & (0x1U << 7))
     {
         if (timeout >= max)
@@ -223,7 +223,7 @@ lcd_return_type lcd_init(uint8_t number_of_lines, uint8_t number_of_dots, void (
     lcd_ms_delay(1);
     lcd_write_instruction((LCD_FUNCTION_SET | LCD_DL_8_BIT));
     lcd_write_instruction((LCD_FUNCTION_SET | LCD_DL_8_BIT | (lcd_lines << 3) | (lcd_dots << 2)));
-    LCD_TIMEOUT_ASSERT(busy_bit_read_timeout(LCD_TIMEOUT_MAX));
+
     /*Display off.*/
     lcd_write_instruction(LCD_DISPLAY_ONOFF_CTRL);
     LCD_TIMEOUT_ASSERT(busy_bit_read_timeout(LCD_TIMEOUT_MAX));
@@ -246,7 +246,7 @@ lcd_return_type lcd_init(uint8_t number_of_lines, uint8_t number_of_dots, void (
     /*Function set 4 bit and user setting for number of lines and dots.*/
     lcd_write_4_bit_init_instruction(LCD_FUNCTION_SET);
     lcd_write_instruction(LCD_FUNCTION_SET | (lcd_lines << 3) | ((number_of_dots >> 1) & 0x1U));
-    LCD_TIMEOUT_ASSERT(busy_bit_read_timeout(LCD_TIMEOUT_MAX));
+
     /*Display off.*/
     lcd_write_instruction(0);
     lcd_write_instruction(LCD_DISPLAY_ONOFF_CTRL);
@@ -364,9 +364,12 @@ lcd_return_type lcd_set_cursor_position(uint8_t line, uint8_t position)
     return LCD_OK;
 }
 
-uint8_t lcd_get_cursor_position(void)
+lcd_return_type lcd_get_cursor_position(uint8_t* line, uint8_t* position)
 {
-    return (lcd_read_bf_ac() & 0x7FU);
+    uint8_t data = (lcd_read_bf_ac() & 0x7FU);
+    *line = (!lcd_lines) ? 1 : ((data & 0xF0) >= 0x40U) ? 2 : 1;
+    *position = (!lcd_lines) ? ((data & 0xFF) + 1) : ((data & 0xF) + 1);
+    return LCD_OK;
 }
 
 lcd_return_type lcd_create_custom_char(uint8_t number_of_dots, uint8_t position, uint8_t *data)
