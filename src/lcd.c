@@ -456,9 +456,9 @@ lcd_return_type lcd_decrement_cursor(bool shift_display)
 
 /**
  * @brief Display On/Off Control 
- * @param display_on true to turn the lcd on.
- * @param cursor_on true to turn the cursor on.
- * @param blink_on true to blink the cursor.
+ * @param display_on Set to true to turn the lcd on.
+ * @param cursor_on Set to true to turn the cursor on.
+ * @param blink_on Set to true to blink the cursor.
  * @return LCD_OK, LCD_ERROR, or LCD_TIMEOUT.
  */
 lcd_return_type lcd_display(bool display_on, bool cursor_on, bool blink_on)
