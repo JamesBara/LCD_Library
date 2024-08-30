@@ -51,7 +51,7 @@
 { \
     lcd_return_type ret = par; \
     if (ret != LCD_OK) \
-    { \
+    { \__busy_bit_read_timeout
         return LCD_TIMEOUT; \
     } \
 }while(0)
@@ -70,7 +70,9 @@ static inline uint8_t __LCD_DB_READ(void);
 
 static inline void __lcd_write(uint8_t data, uint8_t rs_bit, uint8_t rw_bit);
 static inline uint8_t __lcd_read(uint8_t rs_bit, uint8_t rw_bit);
-
+#if defined(LCD_4_BIT_MODE)
+static void __lcd_write_4_bit_init_instruction(uint8_t data);
+#endif
 static void __lcd_write_instruction(uint8_t data);
 static uint8_t __lcd_read_bf_ac(void);
 static void __lcd_write_data(uint8_t data);
@@ -177,28 +179,28 @@ static inline void __lcd_write(uint8_t data, uint8_t rs_bit, uint8_t rw_bit)
 
 #if defined(LCD_8_BIT_MODE)
     /*Write the data.*/
-    LCD_DB_WRITE(data);
+    __LCD_DB_WRITE(data);
     /*Send the data.*/
     LCD_SET_E(1);
-    lcd_ms_delay(1);
+    __lcd_ms_delay(1);
     LCD_SET_E(0);
-    lcd_ms_delay(1);
+    __lcd_ms_delay(1);
 #elif defined(LCD_4_BIT_MODE)
     /*Write high byte.*/
-    LCD_DB_WRITE((data & (0xFU << 4)));
+    __LCD_DB_WRITE((data & (0xFU << 4)));
     /*Send the data.*/
     LCD_SET_E(1);
-    lcd_ms_delay(1);
+    __lcd_ms_delay(1);
     LCD_SET_E(0);
-    lcd_ms_delay(1);
+    __lcd_ms_delay(1);
 
     /*Write low byte.*/
-    LCD_DB_WRITE(((data & 0xFU) << 4));
+    __LCD_DB_WRITE(((data & 0xFU) << 4));
     /*Send the data.*/
     LCD_SET_E(1);
-    lcd_ms_delay(1);
+    __lcd_ms_delay(1);
     LCD_SET_E(0);
-    lcd_ms_delay(1);
+    __lcd_ms_delay(1);
 #endif
 }
 
@@ -224,48 +226,48 @@ static inline uint8_t __lcd_read(uint8_t rs_bit, uint8_t rw_bit)
 #if defined(LCD_8_BIT_MODE)
     /*Read the data.*/
     LCD_SET_E(1);
-    lcd_ms_delay(1);
-    data = LCD_DB_READ();
+    __lcd_ms_delay(1);
+    data = __LCD_DB_READ();
     LCD_SET_E(0);
-    lcd_ms_delay(1);
+    __lcd_ms_delay(1);
 #elif defined(LCD_4_BIT_MODE)
     /*Read the high byte.*/
     LCD_SET_E(1);
-    lcd_ms_delay(1);
-    data = (LCD_DB_READ() & (0xFU << 4));
+    __lcd_ms_delay(1);
+    data = (__LCD_DB_READ() & (0xFU << 4));
     LCD_SET_E(0);
-    lcd_ms_delay(1);
+    __lcd_ms_delay(1);
 
     /*Read low byte.*/
     LCD_SET_E(1);
-    lcd_ms_delay(1);
-    data |= ((LCD_DB_READ() >> 4) & 0xFU);
+    __lcd_ms_delay(1);
+    data |= ((__LCD_DB_READ() >> 4) & 0xFU);
     LCD_SET_E(0);
-    lcd_ms_delay(1);
+    __lcd_ms_delay(1);
 #endif
 
     return data;
 }
 
 #if defined(LCD_4_BIT_MODE)
-static void lcd_write_4_bit_init_instruction(uint8_t data)
+static void __lcd_write_4_bit_init_instruction(uint8_t data)
 {
     /*Clear E.*/
     LCD_SET_E(0);
-    lcd_ms_delay(1);
+    __lcd_ms_delay(1);
     /*Set DB0-DB3 as inputs.*/
-    LCD_SET_DB_INPUT();
+    __LCD_SET_DB_INPUT();
     /*Set RS and RW.*/
     LCD_SET_RS(0);
     LCD_SET_RW(0);
 
     /*Write high byte.*/
-    LCD_DB_WRITE((data & (0xFU << 4)));
+    __LCD_DB_WRITE((data & (0xFU << 4)));
     /*Send the data.*/
     LCD_SET_E(1);
-    lcd_ms_delay(1);
+    __lcd_ms_delay(1);
     LCD_SET_E(0);
-    lcd_ms_delay(1);
+    __lcd_ms_delay(1);
 }
 #endif
 
@@ -358,50 +360,50 @@ lcd_return_type lcd_init(uint8_t number_of_lines, uint8_t number_of_dots, void (
     /*Wait for 40ms*/
     __lcd_ms_delay(41);
 #if defined(LCD_8_BIT_MODE)
-    lcd_write_instruction((LCD_FUNCTION_SET | LCD_DL_8_BIT));
+    __lcd_write_instruction((LCD_FUNCTION_SET | LCD_DL_8_BIT));
     /*Wait for 4.1 ms.*/
-    lcd_ms_delay(5);
-    lcd_write_instruction((LCD_FUNCTION_SET | LCD_DL_8_BIT));
+    __lcd_ms_delay(5);
+    __lcd_write_instruction((LCD_FUNCTION_SET | LCD_DL_8_BIT));
     /*Wait for 100 us.*/
-    lcd_ms_delay(1);
-    lcd_write_instruction((LCD_FUNCTION_SET | LCD_DL_8_BIT));
-    lcd_write_instruction((LCD_FUNCTION_SET | LCD_DL_8_BIT | (lcd_lines << 3) | (lcd_dots << 2)));
+    __lcd_ms_delay(1);
+    __lcd_write_instruction((LCD_FUNCTION_SET | LCD_DL_8_BIT));
+    __lcd_write_instruction((LCD_FUNCTION_SET | LCD_DL_8_BIT | (__lcd_lines << 3) | (__lcd_dots << 2)));
 
     /*Display off.*/
-    lcd_write_instruction(LCD_DISPLAY_ONOFF_CTRL);
-    __LCD_TIMEOUT_ASSERT(busy_bit_read_timeout(LCD_TIMEOUT_MAX));
+    __lcd_write_instruction(LCD_DISPLAY_ONOFF_CTRL);
+    __LCD_TIMEOUT_ASSERT(__busy_bit_read_timeout(LCD_TIMEOUT_MAX));
     /*Clear display.*/
-    lcd_write_instruction(LCD_CLEAR_DISPLAY);
-    __LCD_TIMEOUT_ASSERT(busy_bit_read_timeout(LCD_TIMEOUT_MAX));
+    __lcd_write_instruction(LCD_CLEAR_DISPLAY);
+    __LCD_TIMEOUT_ASSERT(__busy_bit_read_timeout(LCD_TIMEOUT_MAX));
     /*Entry mode set.*/
-    lcd_write_instruction(LCD_ENTRY_MODE_SET);
-    __LCD_TIMEOUT_ASSERT(busy_bit_read_timeout(LCD_TIMEOUT_MAX));
+    __lcd_write_instruction(LCD_ENTRY_MODE_SET);
+    __LCD_TIMEOUT_ASSERT(__busy_bit_read_timeout(LCD_TIMEOUT_MAX));
 
 #elif defined(LCD_4_BIT_MODE)
-    lcd_write_4_bit_init_instruction((LCD_FUNCTION_SET | LCD_DL_8_BIT));
+    __lcd_write_4_bit_init_instruction((LCD_FUNCTION_SET | LCD_DL_8_BIT));
     /*Wait for 4.1 ms.*/
-    lcd_ms_delay(5);
-    lcd_write_4_bit_init_instruction((LCD_FUNCTION_SET | LCD_DL_8_BIT));
+    __lcd_ms_delay(5);
+    __lcd_write_4_bit_init_instruction((LCD_FUNCTION_SET | LCD_DL_8_BIT));
     /*Wait for 100 us.*/
-    lcd_ms_delay(1);
-    lcd_write_4_bit_init_instruction((LCD_FUNCTION_SET | LCD_DL_8_BIT));
+    __lcd_ms_delay(1);
+    __lcd_write_4_bit_init_instruction((LCD_FUNCTION_SET | LCD_DL_8_BIT));
     
     /*Function set 4 bit and user setting for number of lines and dots.*/
-    lcd_write_4_bit_init_instruction(LCD_FUNCTION_SET);
-    lcd_write_instruction(LCD_FUNCTION_SET | (lcd_lines << 3) | ((number_of_dots >> 1) & 0x1U));
+    __lcd_write_4_bit_init_instruction(LCD_FUNCTION_SET);
+    __lcd_write_instruction(LCD_FUNCTION_SET | (__lcd_lines << 3) | ((number_of_dots >> 1) & 0x1U));
 
     /*Display off.*/
-    lcd_write_instruction(0);
-    lcd_write_instruction(LCD_DISPLAY_ONOFF_CTRL);
-    __LCD_TIMEOUT_ASSERT(busy_bit_read_timeout(LCD_TIMEOUT_MAX));
+    __lcd_write_instruction(0);
+    __lcd_write_instruction(LCD_DISPLAY_ONOFF_CTRL);
+    __LCD_TIMEOUT_ASSERT(__busy_bit_read_timeout(LCD_TIMEOUT_MAX));
     /*Clear display.*/
-    lcd_write_instruction(0);
-    lcd_write_instruction(LCD_CLEAR_DISPLAY);
-    __LCD_TIMEOUT_ASSERT(busy_bit_read_timeout(LCD_TIMEOUT_MAX));
+    __lcd_write_instruction(0);
+    __lcd_write_instruction(LCD_CLEAR_DISPLAY);
+    __LCD_TIMEOUT_ASSERT(__busy_bit_read_timeout(LCD_TIMEOUT_MAX));
     /*Entry mode set.*/
-    lcd_write_instruction(0);
-    lcd_write_instruction(LCD_ENTRY_MODE_SET);
-    __LCD_TIMEOUT_ASSERT(busy_bit_read_timeout(LCD_TIMEOUT_MAX));
+    __lcd_write_instruction(0);
+    __lcd_write_instruction(LCD_ENTRY_MODE_SET);
+    __LCD_TIMEOUT_ASSERT(__busy_bit_read_timeout(LCD_TIMEOUT_MAX));
 #endif
     return LCD_OK;
 }
