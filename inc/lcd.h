@@ -3,7 +3,6 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "YourDefinitions.h"
 
 #ifndef __GNUC__
 	#error Unsupported compiler!

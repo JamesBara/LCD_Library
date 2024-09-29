@@ -3,6 +3,7 @@
 project(LCD_Library DESCRIPTION "LCD Library for 16x2 LCD HD44780U and clones.")
 
 add_library(LCD_Library STATIC
+	inc/lcd.h
 	src/lcd.c
 	)
 

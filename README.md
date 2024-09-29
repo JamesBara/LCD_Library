@@ -16,6 +16,10 @@ LCD_Library
 Define either LCD_8_BIT_MODE or LCD_4_BIT_MODE, depending on the amount of data lines you are planning to use. This library is compatible only with gcc.
 
 # How to port the library:
+## This part of the readme has been modified and is @todo. 
+
+
+
 To port the library modify the appropriate hardware callback functions of the lcd.h file.
 
 STM32 example for GPIOA pin 0 set as the LCD E pin:
