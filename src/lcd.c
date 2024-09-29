@@ -405,7 +405,11 @@ lcd_return_type lcd_init(lcd_line_type lines, lcd_dots_type dots, lcd_driver_typ
     /*Wait for 100 us.*/
     __drv->us_delay(100);
     __lcd_write_instruction((__LCD_FUNCTION_SET | __LCD_DL_8_BIT));
+    /*Wait for 37 us.*/
+    __drv->us_delay(37);
     __lcd_write_instruction((__LCD_FUNCTION_SET | __LCD_DL_8_BIT | (__lcd_lines << 3) | (__lcd_dots << 2)));
+    /*Wait for 37 us.*/
+    __drv->us_delay(37);
 
     /*Display off.*/
     __lcd_write_instruction(__LCD_DISPLAY_ONOFF_CTRL);
