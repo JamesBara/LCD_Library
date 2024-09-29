@@ -36,7 +36,7 @@
 #define __LCD_CURSOR_BLINK (0x1U << 0) /*<! Display on/off control instruction flag. Blinks the cursor.*/
 #define __LCD_CURSOR_OR_DISPLAY_SHIFT (0x1U << 4) /*<! Cursor or display shift instruction. Moves cursor and shifts display without changing DDRAM contents*/
 #define __LCD_SC_DISPLAY_SHIFT (0x1U << 3) /*<! Cursor or display shift instruction flag. Moves the display.*/
-#define __LCD_RL_SHIFT_RIGHT\ (0x1U << 2) /*<! Cursor or display shift instruction flag. Shifts to the right.*/
+#define __LCD_RL_SHIFT_RIGHT (0x1U << 2) /*<! Cursor or display shift instruction flag. Shifts to the right.*/
 #define __LCD_SET_CGRAM_ADDRESS (0x1U << 6) /*<! Set cgram address instruction.*/
 #define __LCD_SET_DDRAM_ADDRESS (0x1U << 7) /*<! Set ddram address instruction.*/
 
