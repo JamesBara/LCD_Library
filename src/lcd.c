@@ -59,7 +59,7 @@
 }while (0)
 
 /*Store a pointer to the callbacks.*/
-static lcd_driver_type* const __drv;
+static lcd_driver_type const * __drv;
 /*Store the number of lines.*/
 static lcd_line_type __lcd_lines; /*<! 0 for 1 line, 1 for 2 lines.*/
 /*Store the number of dots.*/
@@ -341,7 +341,7 @@ static lcd_return_type __busy_bit_read_timeout(uint32_t max)
  * @param ms_delay Callback to a user defined delay function in milliseconds.
  * @return LCD_OK,	LCD_ERROR, or LCD_TIMEOUT.
  */
-lcd_return_type lcd_init(lcd_line_type lines, lcd_dots_type dots, lcd_driver_type *const driver)
+lcd_return_type lcd_init(lcd_line_type lines, lcd_dots_type dots, lcd_driver_type const * const driver)
 {
     /*Number of lines can be 1 or 2.*/
     __LCD_ERROR_ASSERT(lines == LCD_LINE_1 || lines == LCD_LINE_2);

@@ -89,7 +89,7 @@ typedef struct _lcd_driver_type
 }lcd_driver_type;
 
 
-lcd_return_type lcd_init(lcd_line_type lines, lcd_dots_type dots, lcd_driver_type *const driver);
+lcd_return_type lcd_init(lcd_line_type lines, lcd_dots_type dots, lcd_driver_type const * const driver);
 lcd_return_type lcd_clear_display(void);
 lcd_return_type lcd_return_home(void);
 lcd_return_type lcd_increment_cursor(bool shift_display);
