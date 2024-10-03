@@ -13,54 +13,73 @@ LCD_Library
 ```
 
 # How to start with the library:
-Define either LCD_8_BIT_MODE or LCD_4_BIT_MODE, depending on the amount of data lines you are planning to use. This library is compatible only with gcc.
+Clone or download as a submodule. Add add_subdirectory(LCD_Library), target_compile_definitions(LCD_Library INTERFACE LCD_8_BIT_MODE or LCD_4_BIT_MODE) and target_link_libraries(${CMAKE_PROJECT_NAME} LCD_Library),
+to the projects CMakeLists.txt.
 
-# How to port the library:
-## This part of the readme has been modified and is @todo. 
-
-
-
-To port the library modify the appropriate hardware callback functions of the lcd.h file.
-
-STM32 example for GPIOA pin 0 set as the LCD E pin:
-
-```
-
-__attribute__((always_inline)) static inline void LCD_SET_E(uint32_t bit)
-{
-	GPIOA->BSRR = (bit & 0x1U) ? GPIO_BSRR_BS0 : GPIO_BSRR_BR0;
-}
-
-
-static inline void LCD_SETUP(void)
-{
-	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
-    while (!(RCC->AHB2ENR & RCC_AHB2ENR_GPIOAEN));
-	GPIOA->MODER &= ~GPIO_MODER_MODE0;
-	GPIOA->MODER |= GPIO_MODER_MODE0_0;
-}
-```
-
+## Please note that LCD_4_BIT_MODE is untested and might have errors. The library has been tested only with gcc.
 
 # How to use the library:
-Include lcd.h, call the lcd_init function while providing the amount of lines, the font, and a millisecond delay callback function to startup the LCD.
-The lcd_init function performs "initialization by instructions", as shown in the datasheet. 
+Include lcd.h, call the lcd_init function while providing the amount of lines, the font, and an lcd_driver_type struct to startup the LCD.
+The lcd_init function performs "initialization by instructions", as mentioned in the datasheet.
 
-The following is an STM32 example, where the LCD is initialized as 1 line, 5x8 dot font, using HAL_Delay as millisecond delay callback function, 
-the display is turned on, and the cursor is visible but not blinking, the cursor is incrementing, the display shift is enabled, and "Hello World." appears
+The following is an STM32 example, where the LCD is initialized as 1 line, 5x8 dot font, using lcd_driver with a series of (mandatory) static hardware functions registered, 
+the display then gets cleared, turned on, the cursor is set to visible but not blinking, the cursor is set to incrementing, the display shift is enabled, and "Hello World." appears
 on the LCD:
 
 ```
 
 int main(void)
 {
+	lcd_driver_type lcd_driver =
+	{
+	   us_delay,
+	   lcd_io_setup,
+	   lcd_set_e,
+	   lcd_set_rs,
+	   lcd_set_rw,
+	   lcd_get_db0,
+	   lcd_get_db1,
+	   lcd_get_db2,
+	   lcd_get_db3,
+	   lcd_get_db4,
+	   lcd_get_db5,
+	   lcd_get_db6,
+	   lcd_get_db7,
+	   lcd_set_db0,
+	   lcd_set_db1,
+	   lcd_set_db2,
+	   lcd_set_db3,
+	   lcd_set_db4,
+	   lcd_set_db5,
+	   lcd_set_db6,
+	   lcd_set_db7,
+	   lcd_db0_input,
+	   lcd_db1_input,
+	   lcd_db2_input,
+	   lcd_db3_input,
+	   lcd_db4_input,
+	   lcd_db5_input,
+	   lcd_db6_input,
+	   lcd_db7_input,
+	   lcd_db0_output,
+	   lcd_db1_output,
+	   lcd_db2_output,
+	   lcd_db3_output,
+	   lcd_db4_output,
+	   lcd_db5_output,
+	   lcd_db6_output,
+	   lcd_db7_output
+	};
+
     HAL_Init();
     SystemClock_Config();
-    (void)lcd_init(1, 8, HAL_Delay);
+
+    (void)lcd_init(LCD_LINE_2, LCD_DOTS_5x8, &lcd_driver);
+	(void)lcd_clear_display();
 	(void)lcd_display(true, true, false);
 	(void)lcd_increment_cursor(true);
-	(void)lcd_clear_display();
 	(void)lcd_print_string("Hello World.");
+
 
 	while (1)
 	{

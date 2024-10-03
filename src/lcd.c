@@ -12,7 +12,7 @@
 #define __DB6_BIT_POS 6
 #define __DB7_BIT_POS 7
 
-#define __DB_GET_BIT(byte, pos) ((byte) & (0x1U << (pos))) ? 1 : 0
+#define __DB_GET_BIT(byte, pos) ((byte) & (0x1U << (pos))) ? LCD_PIN_HIGH : LCD_PIN_LOW
 
 #define __DB_SET_BIT(byte, fun, pos) do \
 { \
@@ -59,7 +59,7 @@
 }while (0)
 
 /*Store a pointer to the callbacks.*/
-static lcd_driver_type* __drv;
+static lcd_driver_type* const __drv;
 /*Store the number of lines.*/
 static lcd_line_type __lcd_lines; /*<! 0 for 1 line, 1 for 2 lines.*/
 /*Store the number of dots.*/
@@ -123,6 +123,7 @@ static inline void __lcd_set_db_output(void)
  */
 static inline void __lcd_set_db(uint8_t data)
 {
+
 #if defined(LCD_8_BIT_MODE)
     __drv->set_db0(__DB_GET_BIT(data, __DB0_BIT_POS));
     __drv->set_db1(__DB_GET_BIT(data, __DB1_BIT_POS));
@@ -340,7 +341,7 @@ static lcd_return_type __busy_bit_read_timeout(uint32_t max)
  * @param ms_delay Callback to a user defined delay function in milliseconds.
  * @return LCD_OK,	LCD_ERROR, or LCD_TIMEOUT.
  */
-lcd_return_type lcd_init(lcd_line_type lines, lcd_dots_type dots, lcd_driver_type *driver)
+lcd_return_type lcd_init(lcd_line_type lines, lcd_dots_type dots, lcd_driver_type *const driver)
 {
     /*Number of lines can be 1 or 2.*/
     __LCD_ERROR_ASSERT(lines == LCD_LINE_1 || lines == LCD_LINE_2);
@@ -358,38 +359,48 @@ lcd_return_type lcd_init(lcd_line_type lines, lcd_dots_type dots, lcd_driver_typ
     __LCD_ERROR_ASSERT(driver->set_e != NULL);
     __LCD_ERROR_ASSERT(driver->set_rs != NULL);
     __LCD_ERROR_ASSERT(driver->set_rw != NULL);
+#if defined(LCD_8_BIT_MODE)
     __LCD_ERROR_ASSERT(driver->get_db0 != NULL);
     __LCD_ERROR_ASSERT(driver->get_db1 != NULL);
     __LCD_ERROR_ASSERT(driver->get_db2 != NULL);
     __LCD_ERROR_ASSERT(driver->get_db3 != NULL);
+#endif
     __LCD_ERROR_ASSERT(driver->get_db4 != NULL);
     __LCD_ERROR_ASSERT(driver->get_db5 != NULL);
     __LCD_ERROR_ASSERT(driver->get_db6 != NULL);
     __LCD_ERROR_ASSERT(driver->get_db7 != NULL);
+#if defined(LCD_8_BIT_MODE)
     __LCD_ERROR_ASSERT(driver->set_db0 != NULL);
     __LCD_ERROR_ASSERT(driver->set_db1 != NULL);
     __LCD_ERROR_ASSERT(driver->set_db2 != NULL);
     __LCD_ERROR_ASSERT(driver->set_db3 != NULL);
+#endif
     __LCD_ERROR_ASSERT(driver->set_db4 != NULL);
     __LCD_ERROR_ASSERT(driver->set_db5 != NULL);
     __LCD_ERROR_ASSERT(driver->set_db6 != NULL);
     __LCD_ERROR_ASSERT(driver->set_db7 != NULL);
+#if defined(LCD_8_BIT_MODE)
     __LCD_ERROR_ASSERT(driver->db0_input != NULL);
     __LCD_ERROR_ASSERT(driver->db1_input != NULL);
     __LCD_ERROR_ASSERT(driver->db2_input != NULL);
     __LCD_ERROR_ASSERT(driver->db3_input != NULL);
+#endif
     __LCD_ERROR_ASSERT(driver->db4_input != NULL);
     __LCD_ERROR_ASSERT(driver->db5_input != NULL);
     __LCD_ERROR_ASSERT(driver->db6_input != NULL);
     __LCD_ERROR_ASSERT(driver->db7_input != NULL);
+#if defined(LCD_8_BIT_MODE)
     __LCD_ERROR_ASSERT(driver->db0_output != NULL);
     __LCD_ERROR_ASSERT(driver->db1_output != NULL);
     __LCD_ERROR_ASSERT(driver->db2_output != NULL);
     __LCD_ERROR_ASSERT(driver->db3_output != NULL);
+#endif
     __LCD_ERROR_ASSERT(driver->db4_output != NULL);
     __LCD_ERROR_ASSERT(driver->db5_output != NULL);
     __LCD_ERROR_ASSERT(driver->db6_output != NULL);
     __LCD_ERROR_ASSERT(driver->db7_output != NULL);
+
+
 
     __drv = driver;
 
