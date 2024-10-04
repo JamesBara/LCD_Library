@@ -23,22 +23,22 @@
 /*Instructions*/
 #define __LCD_CLEAR_DISPLAY (0x1U << 0)
 #define __LCD_RETURN_HOME (0x1U << 1)
-#define __LCD_ENTRY_MODE_SET (0x1U << 2) /*<! Entry Mode Set instruction.*/
-#define __LCD_ID_INCREMENT (0x1U << 1) /*<! Entry Mode Set instruction flag. Increment the cursor.*/
-#define __LCD_S_DISPLAY_SHIFT (0x1U << 0) /*<! Entry Mode Set instruction flag. Automatically shift the display.*/
-#define __LCD_FUNCTION_SET (0x1U << 5) /*<! Function set instruction.*/
-#define __LCD_DL_8_BIT (0x1U << 4) /*<! Function set instruction flag. Use 8 bit data length.*/
-#define __LCD_N_2_LINES (0x1U << 3) /*<! Function set instruction flag. Use both bottom and top display lines.*/
-#define __LCD_F_5_MUL_10_DOTS (0x1U << 2) /*<! Function set instruction flag. 5x10 dots.*/
-#define __LCD_DISPLAY_ONOFF_CTRL (0x1U << 3) /*<! Display on/off control instruction.*/
-#define __LCD_D_ON (0x1U << 2) /*<! Display on/off control instruction flag. Turns on the display.*/
-#define __LCD_CURSOR_ON (0x1U << 1) /*<! Display on/off control instruction flag. Turns on the cursor.*/
-#define __LCD_CURSOR_BLINK (0x1U << 0) /*<! Display on/off control instruction flag. Blinks the cursor.*/
-#define __LCD_CURSOR_OR_DISPLAY_SHIFT (0x1U << 4) /*<! Cursor or display shift instruction. Moves cursor and shifts display without changing DDRAM contents*/
-#define __LCD_SC_DISPLAY_SHIFT (0x1U << 3) /*<! Cursor or display shift instruction flag. Moves the display.*/
-#define __LCD_RL_SHIFT_RIGHT (0x1U << 2) /*<! Cursor or display shift instruction flag. Shifts to the right.*/
-#define __LCD_SET_CGRAM_ADDRESS (0x1U << 6) /*<! Set cgram address instruction.*/
-#define __LCD_SET_DDRAM_ADDRESS (0x1U << 7) /*<! Set ddram address instruction.*/
+#define __LCD_ENTRY_MODE_SET (0x1U << 2) /*!< Entry Mode Set instruction.*/
+#define __LCD_ID_INCREMENT (0x1U << 1) /*!< Entry Mode Set instruction flag. Increment the cursor.*/
+#define __LCD_S_DISPLAY_SHIFT (0x1U << 0) /*!< Entry Mode Set instruction flag. Automatically shift the display.*/
+#define __LCD_FUNCTION_SET (0x1U << 5) /*!< Function set instruction.*/
+#define __LCD_DL_8_BIT (0x1U << 4) /*!< Function set instruction flag. Use 8 bit data length.*/
+#define __LCD_N_2_LINES (0x1U << 3) /*!< Function set instruction flag. Use both bottom and top display lines.*/
+#define __LCD_F_5_MUL_10_DOTS (0x1U << 2) /*!< Function set instruction flag. 5x10 dots.*/
+#define __LCD_DISPLAY_ONOFF_CTRL (0x1U << 3) /*!< Display on/off control instruction.*/
+#define __LCD_D_ON (0x1U << 2) /*!< Display on/off control instruction flag. Turns on the display.*/
+#define __LCD_CURSOR_ON (0x1U << 1) /*!< Display on/off control instruction flag. Turns on the cursor.*/
+#define __LCD_CURSOR_BLINK (0x1U << 0) /*!< Display on/off control instruction flag. Blinks the cursor.*/
+#define __LCD_CURSOR_OR_DISPLAY_SHIFT (0x1U << 4) /*!< Cursor or display shift instruction. Moves cursor and shifts display without changing DDRAM contents*/
+#define __LCD_SC_DISPLAY_SHIFT (0x1U << 3) /*!< Cursor or display shift instruction flag. Moves the display.*/
+#define __LCD_RL_SHIFT_RIGHT (0x1U << 2) /*!< Cursor or display shift instruction flag. Shifts to the right.*/
+#define __LCD_SET_CGRAM_ADDRESS (0x1U << 6) /*!< Set cgram address instruction.*/
+#define __LCD_SET_DDRAM_ADDRESS (0x1U << 7) /*!< Set ddram address instruction.*/
 
 #define __LCD_ERROR_ASSERT(par) do \
 { \
@@ -61,9 +61,9 @@
 /*Store a pointer to the callbacks.*/
 static lcd_driver_type const * __drv;
 /*Store the number of lines.*/
-static lcd_line_type __lcd_lines; /*<! 0 for 1 line, 1 for 2 lines.*/
+static lcd_line_type __lcd_lines;
 /*Store the number of dots.*/
-static lcd_dots_type __lcd_dots; /*<! 0 for 5x8 dots, 1 for 5x10 dots.*/
+static lcd_dots_type __lcd_dots;
 
 static inline void __lcd_set_db_input(void);
 static inline void __lcd_set_db_output(void);
@@ -350,7 +350,7 @@ lcd_return_type lcd_init(lcd_line_type lines, lcd_dots_type dots, lcd_driver_typ
     /*Number of dots can be 8 or 10.*/
     __LCD_ERROR_ASSERT(dots == LCD_DOTS_5x8 || dots == LCD_DOTS_5x10);
     __lcd_dots = dots;
-    /*Cannot display two lines for 5 × 10 dot character fond.*/
+    /*Cannot display two lines for 5 Ã— 10 dot character fond.*/
     __LCD_ERROR_ASSERT(!(lines == LCD_LINE_2 && dots == LCD_DOTS_5x10));
     /*Callbacks cannot be empty.*/
     __LCD_ERROR_ASSERT(driver != NULL);
@@ -399,11 +399,8 @@ lcd_return_type lcd_init(lcd_line_type lines, lcd_dots_type dots, lcd_driver_typ
     __LCD_ERROR_ASSERT(driver->db5_output != NULL);
     __LCD_ERROR_ASSERT(driver->db6_output != NULL);
     __LCD_ERROR_ASSERT(driver->db7_output != NULL);
-
-
-
+    
     __drv = driver;
-
     __drv->io_setup();
     
     /*Wait for 55ms*/
