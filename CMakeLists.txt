@@ -3,11 +3,11 @@ project(LCD_Library DESCRIPTION "LCD Library for 16x2 LCD HD44780U and clones.")
 add_library(LCD_Library INTERFACE)
 
 target_include_directories(LCD_Library INTERFACE
-	inc
-	src
+    inc
+    src
 )
 
 target_sources(LCD_Library INTERFACE
     src/lcd.c
-	inc/lcd.h
+    inc/lcd.h
 )
