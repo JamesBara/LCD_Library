@@ -188,7 +188,7 @@ static inline void __lcd_write(uint8_t data, uint8_t rs_bit, uint8_t rw_bit)
     __drv->set_e(0);
     __drv->us_delay(1);
 #elif defined(LCD_4_BIT_MODE)
-    /*Write high byte.*/
+    /*Write high nibble.*/
     __lcd_set_db((data & (0xFU << 4)));
     /*Send the data.*/
     __drv->set_e(1);
@@ -196,7 +196,7 @@ static inline void __lcd_write(uint8_t data, uint8_t rs_bit, uint8_t rw_bit)
     __drv->set_e(0);
     __drv->us_delay(1);
 
-    /*Write low byte.*/
+    /*Write low nibble.*/
     __lcd_set_db(((data & 0xFU) << 4));
     /*Send the data.*/
     __drv->set_e(1);
@@ -233,14 +233,14 @@ static inline uint8_t __lcd_read(uint8_t rs_bit, uint8_t rw_bit)
     __drv->set_e(0);
     __drv->us_delay(1);
 #elif defined(LCD_4_BIT_MODE)
-    /*Read the high byte.*/
+    /*Read the high nibble.*/
     __drv->set_e(1);
     __drv->us_delay(1);
     data = (__lcd_get_db() & (0xFU << 4));
     __drv->set_e(0);
     __drv->us_delay(1);
 
-    /*Read low byte.*/
+    /*Read low nibble.*/
     __drv->set_e(1);
     __drv->us_delay(1);
     data |= ((__lcd_get_db() >> 4) & 0xFU);
@@ -251,6 +251,10 @@ static inline uint8_t __lcd_read(uint8_t rs_bit, uint8_t rw_bit)
     return data;
 }
 
+/**
+ * @brief Transmit a 4 bit init instructionto the lcd screen.
+ * @param data A byte to to transmit. Only the high nibble will be transmitted while the low nibble will be ignored.
+ */
 #if defined(LCD_4_BIT_MODE)
 static void __lcd_write_4_bit_init_instruction(uint8_t data)
 {
@@ -262,8 +266,7 @@ static void __lcd_write_4_bit_init_instruction(uint8_t data)
     /*Set RS and RW.*/
     __drv->set_rs(0);
     __drv->set_rw(0);
-
-    /*Write high byte.*/
+    /*Write high nibble.*/
     __lcd_set_db((data & (0xFU << 4)));
     /*Send the data.*/
     __drv->set_e(1);
@@ -418,17 +421,6 @@ lcd_return_type lcd_init(lcd_line_type lines, lcd_dots_type dots, lcd_driver_typ
     __lcd_write_instruction((__LCD_FUNCTION_SET | __LCD_DL_8_BIT | (__lcd_lines << 3) | (__lcd_dots << 2)));
     /*Wait for 37 us.*/
     __drv->us_delay(37);
-
-    /*Display off.*/
-    __lcd_write_instruction(__LCD_DISPLAY_ONOFF_CTRL);
-    __LCD_TIMEOUT_ASSERT(__busy_bit_read_timeout(__LCD_TIMEOUT_MAX));
-    /*Clear display.*/
-    __lcd_write_instruction(__LCD_CLEAR_DISPLAY);
-    __LCD_TIMEOUT_ASSERT(__busy_bit_read_timeout(__LCD_TIMEOUT_MAX));
-    /*Entry mode set.*/
-    __lcd_write_instruction(__LCD_ENTRY_MODE_SET);
-    __LCD_TIMEOUT_ASSERT(__busy_bit_read_timeout(__LCD_TIMEOUT_MAX));
-
 #elif defined(LCD_4_BIT_MODE)
     __lcd_write_4_bit_init_instruction((__LCD_FUNCTION_SET | __LCD_DL_8_BIT));
     /*Wait for 4.1 ms.*/
@@ -437,24 +429,27 @@ lcd_return_type lcd_init(lcd_line_type lines, lcd_dots_type dots, lcd_driver_typ
     /*Wait for 100 us.*/
     __drv->us_delay(100);
     __lcd_write_4_bit_init_instruction((__LCD_FUNCTION_SET | __LCD_DL_8_BIT));
-    
-    /*Function set 4 bit and user setting for number of lines and dots.*/
+    /*Wait for 37 us.*/
+    __drv->us_delay(37);
     __lcd_write_4_bit_init_instruction(__LCD_FUNCTION_SET);
+    /*Wait for 37 us.*/
+    __drv->us_delay(37);
+    /*Function set 4 bit and user setting for number of lines and dots.*/
     __lcd_write_instruction(__LCD_FUNCTION_SET | (__lcd_lines << 3) | (__lcd_dots << 2));
+    /*Wait for 37 us.*/
+    __drv->us_delay(37);
+#endif
 
     /*Display off.*/
-    __lcd_write_instruction(0);
     __lcd_write_instruction(__LCD_DISPLAY_ONOFF_CTRL);
     __LCD_TIMEOUT_ASSERT(__busy_bit_read_timeout(__LCD_TIMEOUT_MAX));
     /*Clear display.*/
-    __lcd_write_instruction(0);
     __lcd_write_instruction(__LCD_CLEAR_DISPLAY);
     __LCD_TIMEOUT_ASSERT(__busy_bit_read_timeout(__LCD_TIMEOUT_MAX));
     /*Entry mode set.*/
-    __lcd_write_instruction(0);
     __lcd_write_instruction(__LCD_ENTRY_MODE_SET);
     __LCD_TIMEOUT_ASSERT(__busy_bit_read_timeout(__LCD_TIMEOUT_MAX));
-#endif
+
     return LCD_OK;
 }
 
