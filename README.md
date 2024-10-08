@@ -21,13 +21,13 @@ target_compile_definitions(LCD_Library INTERFACE LCD_8_BIT_MODE) or target_compi
 target_link_libraries(${CMAKE_PROJECT_NAME} LCD_Library)
 ```
 
-Please note that LCD_4_BIT_MODE is untested and might not work properly. The library has been tested only with gcc compiler so only gcc compiler is supported.
+Please note that the library has been tested only with gcc compiler so only gcc compiler is supported.
 
 # How to use the library:
 Include lcd.h, call the lcd_init function while providing the amount of lines, the font, and an lcd_driver_type struct to startup the LCD.
 The lcd_init function performs "initialization by instructions", as mentioned in the datasheet.
 
-The following is an STM32 example, where the LCD is initialized as 2 lines, 5x8 dot font, using lcd_driver, the display then gets cleared, turned on, the cursor is set to visible but not blinking, the cursor is set to incrementing, the display shift is enabled, and "Hello World." appears
+The following is an STM32 example, using 8 bit mode, where the LCD is initialized as 2 lines, 5x8 dot font, using lcd_driver, the display then gets cleared, turned on, the cursor is set to visible but not blinking, the cursor is set to incrementing, the display shift is enabled, and "Hello World." appears
 on the LCD.
 
 ```
